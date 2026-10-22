@@ -1,0 +1,49 @@
+name: Production Shift-Right Monitor
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  performance-monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Check Production Availability and SLA
+        run: |
+          newman run - --url "https://reqres.in/api/users?page=1" << 'EOF'
+          {
+            "info": {
+              "name": "Health Check",
+              "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+            },
+            "item": [{
+              "name": "Ping Endpoint",
+              "request": {
+                "method": "GET",
+                "url": "https://reqres.in/api/users?page=1"
+              },
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "pm.test('Availability Check - Status is 200', function () { pm.response.to.have.status(200); });",
+                    "pm.test('Performance SLA Check - Response time < 800ms', function () { pm.expect(pm.response.responseTime).to.be.below(800); });"
+                  ]
+                }
+              }]
+            }]
+          }
+          EOF
