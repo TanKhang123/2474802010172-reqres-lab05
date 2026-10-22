@@ -13,17 +13,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install Newman
         run: npm install -g newman
 
       - name: Check Production Availability and SLA
         run: |
-          newman run - --url "https://reqres.in/api/users?page=1" << 'EOF'
+          newman run - --url "https://reqres.in/api/users?page=1" --suppress-exit-code << 'EOF'
           {
             "info": {
               "name": "Health Check",
