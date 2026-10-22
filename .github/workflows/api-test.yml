@@ -1,0 +1,40 @@
+name: ReqRes API Automated Testing Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  api-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Newman & htmlextra Reporter
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+
+      - name: Execute Data-Driven API Tests with Newman
+        run: |
+          newman run ReqRes_Collection.json \
+            -e ReqRes_Environment.json \
+            -d users.csv \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export report.html
+
+      - name: Upload HTML Test Report Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reqres-api-test-report
+          path: report.html
