@@ -23,5 +23,5 @@ jobs:
 
       - name: Check Production Availability and SLA
         run: |
-          newman run "https://reqres.in/api/users?page=1" \
+          newman run Monitor_Collection.json \
             --suppress-exit-code
